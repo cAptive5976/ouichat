@@ -29,5 +29,6 @@ public class SearchActivity extends AppCompatActivity {
             }
             return false;
         });
+        bottomNavigationView.setSelectedItemId(R.id.navigation_search);
     }
 }

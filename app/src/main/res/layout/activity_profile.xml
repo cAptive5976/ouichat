@@ -34,8 +34,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Possédez-vous un compte OuiChat ?"
-            android:textSize="18sp"
-            android:textColor="@android:color/black" />
+            android:textSize="18sp" />
 
         <LinearLayout
             android:orientation="horizontal"
