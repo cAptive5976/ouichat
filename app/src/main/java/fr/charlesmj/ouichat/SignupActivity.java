@@ -8,15 +8,11 @@ import android.widget.Toast;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class SignupActivity extends AppCompatActivity {
-    FirebaseDatabase database = FirebaseDatabase.getInstance();
-    DatabaseReference users = database.getReference("users");
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
     private TextInputEditText et_email;
     private TextInputEditText et_first_name;
     private TextInputEditText et_last_name;
@@ -43,18 +39,18 @@ public class SignupActivity extends AppCompatActivity {
     }
 
     private void onSignupClick() {
-        final String email = et_email.getText().toString().trim();
-        final String first_name = et_first_name.getText().toString().trim();
-        final String last_name = et_last_name.getText().toString().trim();
-        final String password = et_password.getText().toString().trim();
+        String email = et_email.getText().toString().trim();
+        String first_name = et_first_name.getText().toString().trim();
+        String last_name = et_last_name.getText().toString().trim();
+        String password = et_password.getText().toString().trim();
 
-        // Validate input fields
+        // On vérifie que tous les champs sont remplis
         if (email.isEmpty() || first_name.isEmpty() || last_name.isEmpty() || password.isEmpty()) {
             Toast.makeText(this, "Veuillez remplir tous les champs", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Generate user ID from email
+        // On génère l'ID Firestore de l'utilisateur avec la règle compte@domaine -> domaine.compte avec un split
         String[] parts = email.split("@");
         if (parts.length != 2) {
             Toast.makeText(this, "Format d'email invalide", Toast.LENGTH_SHORT).show();
@@ -62,41 +58,34 @@ public class SignupActivity extends AppCompatActivity {
         }
         String id = parts[1] + "." + parts[0];
 
-        // Check if user already exists
-        users.child(id).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
+
+        // Partie communiquant avec Firestore
+        db.collection("users").document(id).get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                DocumentSnapshot document = task.getResult();
+                if (document.exists()) { // Si l'utilisateur existe déjà
                     Toast.makeText(SignupActivity.this, "Cet utilisateur existe déjà", Toast.LENGTH_SHORT).show();
-                } else {
-                    // Create new user
-                    User newUser = new User();
+                } else { // Sinon, on crée l'utilisateur
+                    User newUser = new User(); // On crée un nouvel utilisateur de type objet User
                     newUser.setEmail(email);
                     newUser.setFirst_name(first_name);
                     newUser.setLast_name(last_name);
                     newUser.setPassword(password);
-                    newUser.setId(id);
 
-                    users.child(id).setValue(newUser, new DatabaseReference.CompletionListener() {
-                        @Override
-                        public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-                            if (databaseError == null) {
+                    db.collection("users").document(id).set(newUser)
+                            .addOnSuccessListener(aVoid -> {
                                 Toast.makeText(SignupActivity.this, "Utilisateur créé avec succès", Toast.LENGTH_SHORT).show();
                                 Intent intent = new Intent(SignupActivity.this, LoginActivity.class);
                                 intent.putExtra("EMAIL", email);
                                 startActivity(intent);
                                 finish();
-                            } else {
-                                Toast.makeText(SignupActivity.this, "Erreur lors de la création de l'utilisateur: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    });
+                            })
+                            .addOnFailureListener(e -> {
+                                Toast.makeText(SignupActivity.this, "Erreur lors de la création de l'utilisateur: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            });
                 }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Toast.makeText(SignupActivity.this, "Erreur de base de données: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(SignupActivity.this, "Erreur lors de la vérification de l'utilisateur: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
