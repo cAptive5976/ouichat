@@ -1,7 +1,9 @@
 package fr.charlesmj.ouichat;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -23,9 +25,18 @@ public class SearchActivity extends AppCompatActivity {
             } else if (itemId == R.id.navigation_search) {
                 return true;
             } else if (itemId == R.id.navigation_profile) {
-                startActivity(new Intent(this, ProfileActivity.class));
-                overridePendingTransition(0, 0);
-                return true;
+                // On vérifie si l'utilisateur est connecté pour afficher le bon profil
+                SharedPreferences prefs = getSharedPreferences("UserSession", Context.MODE_PRIVATE);
+                boolean isLoggedIn = prefs.getBoolean("isLoggedIn", false);
+                if (isLoggedIn) {
+                    startActivity(new Intent(this, ProfileActivityLogon.class));
+                    overridePendingTransition(0, 0);
+                    return true;
+                } else {
+                    startActivity(new Intent(this, ProfileActivity.class));
+                    overridePendingTransition(0, 0);
+                    return true;
+                }
             }
             return false;
         });

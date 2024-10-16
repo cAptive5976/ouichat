@@ -21,10 +21,12 @@ public class ProfileActivity extends AppCompatActivity{
 
         btn_login.setOnClickListener(v -> {
             startActivity(new Intent(this, LoginActivity.class));
+            overridePendingTransition(0, 0);
         });
 
         btn_signup.setOnClickListener(v -> {
             startActivity(new Intent(this, SignupActivity.class));
+            overridePendingTransition(0, 0);
         });
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);

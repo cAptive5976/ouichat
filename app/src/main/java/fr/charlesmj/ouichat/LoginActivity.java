@@ -1,7 +1,10 @@
 package fr.charlesmj.ouichat;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
@@ -47,9 +50,20 @@ public class LoginActivity extends AppCompatActivity {
                         if (!querySnapshot.isEmpty()) {
                             for (QueryDocumentSnapshot document : querySnapshot) {
                                 User user = document.toObject(User.class);
-                                if (user != null && user.getPassword().equals(password)) {
+                                if (user.getPassword().equals(password)) {
+                                    // On enregistre l'utilisateur dans les SharedPreferences pour qu'il reste connecté
+                                    SharedPreferences prefs = getSharedPreferences("UserSession", Context.MODE_PRIVATE);
+                                    SharedPreferences.Editor editor = prefs.edit();
+                                    editor.putString("userId", document.getId());
+                                    editor.putString("email", user.getEmail());
+                                    editor.putString("first_name", user.getFirst_name());
+                                    editor.putString("last_name", user.getLast_name());
+                                    editor.putBoolean("isLoggedIn", true);
+                                    editor.apply();
+                                    // Puis on le redirige vers son profil
                                     Intent intent = new Intent(LoginActivity.this, ProfileActivityLogon.class);
                                     startActivity(intent);
+                                    overridePendingTransition(0, 0);
                                 } else {
                                     Toast.makeText(LoginActivity.this, "Mot de passe incorrect", Toast.LENGTH_SHORT).show();
                                 }

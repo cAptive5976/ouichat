@@ -53,7 +53,7 @@ public class SignupActivity extends AppCompatActivity {
         // On génère l'ID Firestore de l'utilisateur avec la règle compte@domaine -> domaine.compte avec un split
         String[] parts = email.split("@");
         if (parts.length != 2) {
-            Toast.makeText(this, "Format d'email invalide", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Format d'email invalide", Toast.LENGTH_SHORT).show(); // Si le format de l'email est invalide (pas de @) on le signale
             return;
         }
         String id = parts[1] + "." + parts[0];
@@ -78,6 +78,7 @@ public class SignupActivity extends AppCompatActivity {
                                 Intent intent = new Intent(SignupActivity.this, LoginActivity.class);
                                 intent.putExtra("EMAIL", email);
                                 startActivity(intent);
+                                overridePendingTransition(0, 0);
                                 finish();
                             })
                             .addOnFailureListener(e -> {
