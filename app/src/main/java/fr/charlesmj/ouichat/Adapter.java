@@ -17,9 +17,8 @@ import java.util.Locale;
 
 public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
     private ArrayList<Post> posts;
-    private Context context;
 
-    public Adapter(Context context, ArrayList<Post> posts) {
+    public Adapter(ArrayList<Post> posts) {
         this.posts = posts;
     }
 
@@ -33,11 +32,18 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Post item = posts.get(position);
+
         Timestamp timestamp = item.getDate();
         Date date = timestamp.toDate();
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yy HH:mm", Locale.getDefault());
         holder.date.setText(sdf.format(date));
-
+        DocumentReference userRef = item.getUser_id();
+        userRef.get().addOnSuccessListener(documentSnapshot -> { // Ici on utilise la reference comme une clé étrangère en SQL pour afficher le nom et prenom de l'utilisateur
+                String firstName = documentSnapshot.getString("first_name");
+                String lastName = documentSnapshot.getString("last_name");
+                String id = documentSnapshot.getId();
+                holder.username.setText(firstName + " " + lastName + " (" + "#" + id + ")"); // On affiche le nom et prénom de l'utilisateur, on precise l'id quand on a deux personne avec le même nom
+        });
         holder.content.setText(item.getContent());
         holder.likeCount.setText(String.valueOf(item.getLikes()));
         holder.commentCount.setText(String.valueOf(item.getComments()));

@@ -7,9 +7,18 @@ import android.os.Bundle;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+
+import java.util.ArrayList;
+import java.util.Collections;
 
 public class ProfileActivityLogon extends AppCompatActivity{
 
@@ -19,6 +28,12 @@ public class ProfileActivityLogon extends AppCompatActivity{
     TextView tv_email;
     TextView tv_id;
     SharedPreferences prefs;
+    private RecyclerView recyclerViewPosts;
+    private Adapter postAdapter;
+    private ArrayList<Post> postList;
+
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
+    CollectionReference postsRef = db.collection("posts");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,7 +60,18 @@ public class ProfileActivityLogon extends AppCompatActivity{
         tv_id = findViewById(R.id.userId);
         String userId = prefs.getString("userId", "");
         tv_id.setText(prefs.getString("userId", ""));
-        tv_id.setText("Identifiant : " + userId);
+        tv_id.setText("Identifiant : " + "#" + userId);
+
+        postList = new ArrayList<>();
+        postAdapter = new Adapter(postList);
+
+        recyclerViewPosts = findViewById(R.id.recyclerViewPosts);
+
+        recyclerViewPosts.setLayoutManager(new LinearLayoutManager(this));
+        recyclerViewPosts.setAdapter(postAdapter);
+
+        DocumentReference userRef = db.collection("users").document(userId);
+        loadPosts(userRef);
 
         btn_logout = findViewById(R.id.btnLogout);
         btn_logout.setOnClickListener(v -> {
@@ -74,5 +100,21 @@ public class ProfileActivityLogon extends AppCompatActivity{
             return false;
         });
         bottomNavigationView.setSelectedItemId(R.id.navigation_profile);
+    }
+
+    private void loadPosts(DocumentReference userRef) {
+        postsRef.whereEqualTo("user_id", userRef).get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    postList.clear();
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        Post post = document.toObject(Post.class);
+                        postList.add(post);
+                    }
+
+                    // On trie les posts par score
+                    Collections.sort(postList, (p1, p2) -> Integer.compare(p2.getScore(), p1.getScore()));
+
+                    postAdapter.notifyDataSetChanged();
+                });
     }
 }

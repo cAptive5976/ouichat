@@ -10,11 +10,17 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import android.view.MenuItem;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import java.util.Collections;
+import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
 
@@ -24,9 +30,10 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerViewPosts;
     private SwipeRefreshLayout swipeRefreshLayout;
     private FloatingActionButton fabNewPost;
+    private Adapter postAdapter;
+    private ArrayList<Post> postList;
 
     FirebaseFirestore db = FirebaseFirestore.getInstance();
-    CollectionReference usersRef = db.collection("users");
     CollectionReference postsRef = db.collection("posts");
 
     @Override
@@ -39,12 +46,14 @@ public class MainActivity extends AppCompatActivity {
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout); // Actualisation des posts
         fabNewPost = findViewById(R.id.fabNewPost); // Bouton pour créer un nouveau post
 
+        postList = new ArrayList<>(); // On initialise la liste des posts
+        postAdapter = new Adapter(postList); // On initialise l'adapter pour les posts
 
+        recyclerViewPosts.setLayoutManager(new LinearLayoutManager(this));
+        recyclerViewPosts.setAdapter(postAdapter);
 
-
-
-
-
+        loadPosts();
+        swipeRefreshLayout.setOnRefreshListener(this::loadPosts);
 
         // Ici on configure la bar de navigation inférieure
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
@@ -73,5 +82,22 @@ public class MainActivity extends AppCompatActivity {
             return false;
         });
         bottomNavigationView.setSelectedItemId(R.id.navigation_home);
+    }
+
+    private void loadPosts() {
+        postsRef.get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    postList.clear();
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        Post post = document.toObject(Post.class);
+                        postList.add(post);
+                    }
+
+                    // On trie les posts par score
+                    Collections.sort(postList, (p1, p2) -> Integer.compare(p2.getScore(), p1.getScore()));
+
+                    postAdapter.notifyDataSetChanged();
+                    swipeRefreshLayout.setRefreshing(false);
+                });
     }
 }
