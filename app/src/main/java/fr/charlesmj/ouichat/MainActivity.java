@@ -13,6 +13,9 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import androidx.annotation.NonNull;
 
 public class MainActivity extends AppCompatActivity {
@@ -21,6 +24,10 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerViewPosts;
     private SwipeRefreshLayout swipeRefreshLayout;
     private FloatingActionButton fabNewPost;
+
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
+    CollectionReference usersRef = db.collection("users");
+    CollectionReference postsRef = db.collection("posts");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +38,12 @@ public class MainActivity extends AppCompatActivity {
         recyclerViewPosts = findViewById(R.id.recyclerViewPosts); // Liste des posts
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout); // Actualisation des posts
         fabNewPost = findViewById(R.id.fabNewPost); // Bouton pour créer un nouveau post
+
+
+
+
+
+
 
 
         // Ici on configure la bar de navigation inférieure
