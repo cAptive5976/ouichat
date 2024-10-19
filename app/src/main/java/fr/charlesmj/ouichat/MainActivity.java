@@ -55,6 +55,12 @@ public class MainActivity extends AppCompatActivity {
         loadPosts();
         swipeRefreshLayout.setOnRefreshListener(this::loadPosts);
 
+        fabNewPost.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, WriteActivity.class);
+            startActivity(intent);
+            overridePendingTransition(0, 0);
+        });
+
         // Ici on configure la bar de navigation inférieure
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
         bottomNavigationView.setOnItemSelectedListener(item -> {

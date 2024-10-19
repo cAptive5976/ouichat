@@ -48,7 +48,6 @@ public class Post {
     // Partie création et interaction avec les posts
 
     public void setContent(String content) {this.content = content;}
-    public void setUser_id(DocumentReference user_id) {this.user_id = user_id;}
     public void setLikes(int likes) {this.likes = likes;}
     public void setComments(int comments) {this.comments = comments;}
 }
