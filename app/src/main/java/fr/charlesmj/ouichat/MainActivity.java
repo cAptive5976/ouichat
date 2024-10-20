@@ -19,7 +19,6 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import java.util.Collections;
 import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
@@ -100,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     // On trie les posts par score
-                    Collections.sort(postList, (p1, p2) -> Integer.compare(p2.getScore(), p1.getScore()));
+                    postList.sort((p1, p2) -> Integer.compare(p2.getScore(), p1.getScore()));
 
                     postAdapter.notifyDataSetChanged();
                     swipeRefreshLayout.setRefreshing(false);

@@ -18,7 +18,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
-import java.util.Collections;
 
 public class ProfileActivityLogon extends AppCompatActivity{
 
@@ -112,7 +111,7 @@ public class ProfileActivityLogon extends AppCompatActivity{
                     }
 
                     // On trie les posts par score
-                    Collections.sort(postList, (p1, p2) -> Integer.compare(p2.getScore(), p1.getScore()));
+                    postList.sort((p1, p2) -> Integer.compare(p2.getScore(), p1.getScore()));
 
                     postAdapter.notifyDataSetChanged();
                 });

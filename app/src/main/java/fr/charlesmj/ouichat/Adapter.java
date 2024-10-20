@@ -13,6 +13,7 @@ import com.google.firebase.firestore.DocumentReference;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
@@ -52,6 +53,11 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
     @Override
     public int getItemCount() {
         return posts.size();
+    }
+
+    public void filter(List<Post> filteredPosts) {
+        this.posts = new ArrayList<>(filteredPosts);
+        notifyDataSetChanged();
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
