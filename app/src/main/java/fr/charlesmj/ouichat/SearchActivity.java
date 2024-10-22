@@ -94,6 +94,7 @@ public class SearchActivity extends AppCompatActivity {
                     filteredPostList.clear();
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                         Post post = document.toObject(Post.class);
+                        post.setPost_id(document.getId());
                         if (post.getContent().toLowerCase().contains(search.toLowerCase())) { // On filtre les posts par contenu, on compare (contains) en minuscule (toLowerCase) avec la recherche
                             filteredPostList.add(post);
                         }

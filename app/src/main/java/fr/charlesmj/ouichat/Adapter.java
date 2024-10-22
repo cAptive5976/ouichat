@@ -60,6 +60,9 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
             db.collection("posts").document(item.getPostId())
                     .update("likes", item.getLikes())
                     .addOnSuccessListener(aVoid -> {
+                        v.animate().scaleX(1.2f).scaleY(1.2f).setDuration(100).withEndAction(() -> {
+                            v.animate().scaleX(1f).scaleY(1f).setDuration(100).start();
+                        }).start();
                     });
         });
     }
