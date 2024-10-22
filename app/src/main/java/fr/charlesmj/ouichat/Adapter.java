@@ -10,6 +10,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -18,9 +20,12 @@ import java.util.Locale;
 
 public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
     private ArrayList<Post> posts;
+    private FirebaseFirestore db;
+
 
     public Adapter(ArrayList<Post> posts) {
         this.posts = posts;
+        this.db = FirebaseFirestore.getInstance();
     }
 
     @NonNull
@@ -47,7 +52,16 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
         });
         holder.content.setText(item.getContent());
         holder.likeCount.setText(String.valueOf(item.getLikes()));
-        holder.commentCount.setText(String.valueOf(item.getComments()));
+
+        holder.likeIcon.setOnClickListener(v -> {
+            int likes = item.getLikes();
+            item.setLikes(likes + 1);
+            holder.likeCount.setText(String.valueOf(item.getLikes()));
+            db.collection("posts").document(item.getPostId())
+                    .update("likes", item.getLikes())
+                    .addOnSuccessListener(aVoid -> {
+                    });
+        });
     }
 
     @Override
@@ -61,8 +75,8 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        ImageView likeIcon, commentIcon;
-        TextView username, date, content, likeCount, commentCount;
+        ImageView likeIcon;
+        TextView username, date, content, likeCount;
 
         public ViewHolder(View view) {
             super(view);
@@ -71,8 +85,6 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
             content = view.findViewById(R.id.content);
             likeIcon = view.findViewById(R.id.like_icon);
             likeCount = view.findViewById(R.id.like_count);
-            commentIcon = view.findViewById(R.id.comment_icon);
-            commentCount = view.findViewById(R.id.comment_count);
         }
     }
 }

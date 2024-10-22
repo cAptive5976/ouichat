@@ -95,6 +95,7 @@ public class MainActivity extends AppCompatActivity {
                     postList.clear();
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                         Post post = document.toObject(Post.class);
+                        post.setPost_id(document.getId());
                         postList.add(post);
                     }
 
