@@ -40,10 +40,15 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
         Post item = posts.get(position);
 
         Timestamp timestamp = item.getDate();
+
         Date date = timestamp.toDate();
+
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yy HH:mm", Locale.getDefault());
+
         holder.date.setText(sdf.format(date));
+
         DocumentReference userRef = item.getUser_id();
+
         userRef.get().addOnSuccessListener(documentSnapshot -> { // Ici on utilise la reference comme une clé étrangère en SQL pour afficher le nom et prenom de l'utilisateur
                 String firstName = documentSnapshot.getString("first_name");
                 String lastName = documentSnapshot.getString("last_name");
@@ -78,7 +83,7 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        ImageView likeIcon;
+        ImageView likeIcon, profileIcon;
         TextView username, date, content, likeCount;
 
         public ViewHolder(View view) {
@@ -88,6 +93,7 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
             content = view.findViewById(R.id.content);
             likeIcon = view.findViewById(R.id.like_icon);
             likeCount = view.findViewById(R.id.like_count);
+            profileIcon = view.findViewById(R.id.pfp);
         }
     }
 }
