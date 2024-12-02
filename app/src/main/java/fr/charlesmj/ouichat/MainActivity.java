@@ -1,3 +1,16 @@
+/**
+ * Cette classe représente une activité principale de l'application.
+ * Elle gère l'affichage des posts et la navigation entre les différentes sections de l'application.
+ *
+ * @author cAptive
+ * @version 1.0
+ * @see WriteActivity
+ * @see SearchActivity
+ * @see ProfileActivity
+ * @see ProfileActivityLogon
+ * @see SignupActivity
+ * @see LoginActivity
+ */
 package fr.charlesmj.ouichat;
 
 import android.content.Intent;
@@ -5,24 +18,24 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.content.Context;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-import android.view.MenuItem;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 
-import androidx.annotation.NonNull;
-
+/**
+ * MainActivity/Accueil est la classe principale qui gère l'affichage des posts.
+ * Elle permet également à l'utilisateur de naviguer vers d'autres activités.
+ * On va y utilisé les objets de la classe Adapter pour afficher les posts.
+ * @see Adapter
+ * Mais également les objets de la classe Post pour récupérer les données des posts.
+ * @see Post
+ */
 public class MainActivity extends AppCompatActivity {
 
     // On commence nos variables
@@ -89,6 +102,9 @@ public class MainActivity extends AppCompatActivity {
         bottomNavigationView.setSelectedItemId(R.id.navigation_home);
     }
 
+    /**
+     * La méthode loadPosts charge les posts depuis Firestore et les affiche dans la RecyclerView.
+     */
     private void loadPosts() {
         postsRef.get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
@@ -102,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
                     // On trie les posts par score
                     postList.sort((p1, p2) -> Integer.compare(p2.getScore(), p1.getScore()));
 
-                    postAdapter.notifyDataSetChanged();
+                    postAdapter.refresh(postList);
                     swipeRefreshLayout.setRefreshing(false);
                 });
     }
