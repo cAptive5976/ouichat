@@ -62,7 +62,7 @@ public class ProfileActivityLogon extends AppCompatActivity{
         tv_id.setText("Identifiant : " + "#" + userId);
 
         postList = new ArrayList<>();
-        postAdapter = new Adapter(postList);
+        postAdapter = new Adapter(postList, this);
 
         recyclerViewPosts = findViewById(R.id.recyclerViewPosts);
 

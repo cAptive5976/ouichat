@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
         fabNewPost = findViewById(R.id.fabNewPost); // Bouton pour créer un nouveau post
 
         postList = new ArrayList<>(); // On initialise la liste des posts
-        postAdapter = new Adapter(postList); // On initialise l'adapter pour les posts
+        postAdapter = new Adapter(postList,this); // On initialise l'adapter pour les posts
 
         recyclerViewPosts.setLayoutManager(new LinearLayoutManager(this));
         recyclerViewPosts.setAdapter(postAdapter);

@@ -1,5 +1,7 @@
 package fr.charlesmj.ouichat;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,11 +24,12 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
     private ArrayList<Post> posts;
     private FirebaseFirestore db;
     private String currentUserId;
+    private SharedPreferences prefs;
 
-
-    public Adapter(ArrayList<Post> posts) {
+    public Adapter(ArrayList<Post> posts, Context context) {
         this.posts = posts;
-        this.currentUserId = currentUserId;
+        this.prefs = context.getSharedPreferences("UserSession", Context.MODE_PRIVATE);
+        this.currentUserId = prefs.getString("userId", null); // Récupérer l'ID utilisateur depuis SharedPreferences
         this.db = FirebaseFirestore.getInstance();
     }
 
@@ -49,11 +52,11 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
 
         // Partie gestion de l'utilisateur
         DocumentReference userRef = item.getUser_id();
-        userRef.get().addOnSuccessListener(documentSnapshot -> { // Ici on utilise la reference comme une clé étrangère en SQL pour afficher le nom et prenom de l'utilisateur
+        userRef.get().addOnSuccessListener(documentSnapshot -> {
             String firstName = documentSnapshot.getString("first_name");
             String lastName = documentSnapshot.getString("last_name");
             String id = documentSnapshot.getId();
-            holder.username.setText(String.format("%s %s (#%s)", firstName, lastName, id)); // On affiche le nom et prénom de l'utilisateur, on precise l'id quand on a deux personne avec le même nom
+            holder.username.setText(String.format("%s %s (#%s)", firstName, lastName, id));
         });
 
         // Partie contenu du post
@@ -62,36 +65,50 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
         // Partie gestion des likes
         holder.likeCount.setText(String.valueOf(item.getLikes()));
 
-        // Charger l'état initial du bouton "like"
-        db.collection("posts").document(item.getPostId()).get().addOnSuccessListener(documentSnapshot -> {
-            List<String> likedBy = (List<String>) documentSnapshot.get("likedBy");
-            if (likedBy != null && likedBy.contains(currentUserId)) {
-                holder.likeIcon.setSelected(true);
-            } else {
-                holder.likeIcon.setSelected(false);
-            }
-        });
+        // Vérification de l'état du like dans SharedPreferences
+        boolean isLiked = prefs.getBoolean("liked_" + item.getPostId(), false);
+        holder.likeIcon.setSelected(isLiked);
+
+        // Désactiver le bouton si l'utilisateur n'est pas connecté
+        holder.likeIcon.setEnabled(currentUserId != null);
+
         holder.likeIcon.setOnClickListener(v -> {
-            DocumentReference postRef = db.collection("posts").document(item.getPostId());
-            postRef.get().addOnSuccessListener(documentSnapshot -> {
-                List<String> likedBy = (List<String>) documentSnapshot.get("likedBy");
-                if (likedBy == null) likedBy = new ArrayList<>();
-                if (likedBy.contains(currentUserId)) {
-                    // Si déjà liké, retirer le like
-                    likedBy.remove(currentUserId);
-                    postRef.update("likedBy", likedBy, "likes", FieldValue.increment(-1));
-                    item.setLikes(item.getLikes() - 1);
-                    holder.likeCount.setText(String.valueOf(item.getLikes()));
-                    holder.likeIcon.setSelected(false); // État "non liké"
-                } else {
-                    // Ajouter un like
-                    likedBy.add(currentUserId);
-                    postRef.update("likedBy", likedBy, "likes", FieldValue.increment(1));
-                    item.setLikes(item.getLikes() + 1);
-                    holder.likeCount.setText(String.valueOf(item.getLikes()));
-                    holder.likeIcon.setSelected(true); // État "liké"
-                }
-            });
+            if (currentUserId == null) {
+                return; // Ne rien faire si l'utilisateur n'est pas connecté
+            }
+
+            // Rechercher l'utilisateur dans Firestore via son ID
+            db.collection("users").document(currentUserId)
+                    .get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            DocumentReference currentUserRef = documentSnapshot.getReference();
+
+                            // Mettre à jour l'état du like
+                            DocumentReference postRef = db.collection("posts").document(item.getPostId());
+                            SharedPreferences.Editor editor = prefs.edit();
+                            boolean liked = prefs.getBoolean("liked_" + item.getPostId(), false);
+
+                            if (liked) {
+                                // Si déjà liké, retirer le like
+                                editor.putBoolean("liked_" + item.getPostId(), false);
+                                item.setLikes(item.getLikes() - 1);
+                                postRef.update("likes", FieldValue.increment(-1));
+                                postRef.update("likedBy", FieldValue.arrayRemove(currentUserRef)); // Retirer de likedBy
+                                holder.likeIcon.setSelected(false);
+                            } else {
+                                // Ajouter un like
+                                editor.putBoolean("liked_" + item.getPostId(), true);
+                                item.setLikes(item.getLikes() + 1);
+                                postRef.update("likes", FieldValue.increment(1));
+                                postRef.update("likedBy", FieldValue.arrayUnion(currentUserRef)); // Ajouter à likedBy
+                                holder.likeIcon.setSelected(true);
+                            }
+
+                            editor.apply();
+                            holder.likeCount.setText(String.valueOf(item.getLikes()));
+                        }
+                    });
         });
     }
 
@@ -101,7 +118,7 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
         notifyDataSetChanged();
     }
 
-    // Méthode de filtrage de message pour la recherche
+    // Méthode pour filtrer les messages pour la recherche
     public void filter(List<Post> filteredPosts) {
         this.posts = new ArrayList<>(filteredPosts);
         notifyDataSetChanged();
@@ -123,7 +140,6 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
         }
     }
 
-    // Méthode pour compter le nombre de posts obligatoire car ReyclerView.Adapter est une classe abstraite
     @Override
     public int getItemCount() {
         return posts.size();

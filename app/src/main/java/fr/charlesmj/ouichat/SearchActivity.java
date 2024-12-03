@@ -41,7 +41,7 @@ public class SearchActivity extends AppCompatActivity {
 
         postList = new ArrayList<>();
         filteredPostList = new ArrayList<>();
-        postAdapter = new Adapter(postList);
+        postAdapter = new Adapter(postList,this);
 
         search_results = findViewById(R.id.recyclerViewPosts);
         search_results.setLayoutManager(new LinearLayoutManager(this));
