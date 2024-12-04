@@ -1,3 +1,26 @@
+// Version: 1.0
+package fr.charlesmj.ouichat;
+
+// Bibliothèques Android
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.content.Context;
+import androidx.appcompat.app.AppCompatActivity;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import androidx.recyclerview.widget.RecyclerView;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+// Bibliothèques Firestore
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+
+// Bibliothèques Java
+import java.util.ArrayList;
+
 /**
  * Cette classe représente une activité principale de l'application.
  * Elle gère l'affichage des posts et la navigation entre les différentes sections de l'application.
@@ -11,69 +34,49 @@
  * @see SignupActivity
  * @see LoginActivity
  */
-package fr.charlesmj.ouichat;
-
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.os.Bundle;
-import android.content.Context;
-import androidx.appcompat.app.AppCompatActivity;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import androidx.recyclerview.widget.RecyclerView;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import java.util.ArrayList;
-
-/**
- * MainActivity/Accueil est la classe principale qui gère l'affichage des posts.
- * Elle permet également à l'utilisateur de naviguer vers d'autres activités.
- * On va y utilisé les objets de la classe Adapter pour afficher les posts.
- * @see Adapter
- * Mais également les objets de la classe Post pour récupérer les données des posts.
- * @see Post
- */
 public class MainActivity extends AppCompatActivity {
-
-    // On commence nos variables
+    // Declaration des variables
     private RecyclerView recyclerViewPosts;
     private SwipeRefreshLayout swipeRefreshLayout;
     private FloatingActionButton fabNewPost;
     private Adapter postAdapter;
     private ArrayList<Post> postList;
 
+    // Initialisation de Firestore
     FirebaseFirestore db = FirebaseFirestore.getInstance();
     CollectionReference postsRef = db.collection("posts");
 
     @Override
+    // Méthode onCreate qui est appelée au lancement de l'activité
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // On déclare nos variables pour le fil des posts
+        // Declaration des variables
         recyclerViewPosts = findViewById(R.id.recyclerViewPosts); // Liste des posts
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout); // Actualisation des posts
         fabNewPost = findViewById(R.id.fabNewPost); // Bouton pour créer un nouveau post
 
-        postList = new ArrayList<>(); // On initialise la liste des posts
-        postAdapter = new Adapter(postList,this); // On initialise l'adapter pour les posts
+        // Initialisation du RecyclerView et notre Adapter
+        postList = new ArrayList<>();
+        postAdapter = new Adapter(postList,this);
 
+        // Configuration du RecyclerView
         recyclerViewPosts.setLayoutManager(new LinearLayoutManager(this));
         recyclerViewPosts.setAdapter(postAdapter);
 
+        // Chargement des posts avec la méthode loadPosts
         loadPosts();
         swipeRefreshLayout.setOnRefreshListener(this::loadPosts);
 
+        // Bouton pour créer un nouveau post qui redirige vers WriteActivity
         fabNewPost.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, WriteActivity.class);
             startActivity(intent);
             overridePendingTransition(0, 0);
         });
 
-        // Ici on configure la bar de navigation inférieure
+        // Barre de navigation inférieure
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
@@ -102,9 +105,7 @@ public class MainActivity extends AppCompatActivity {
         bottomNavigationView.setSelectedItemId(R.id.navigation_home);
     }
 
-    /**
-     * La méthode loadPosts charge les posts depuis Firestore et les affiche dans la RecyclerView.
-     */
+    // La méthode loadPosts charge les posts depuis Firestore et les affiche dans la RecyclerView.
     private void loadPosts() {
         postsRef.get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {

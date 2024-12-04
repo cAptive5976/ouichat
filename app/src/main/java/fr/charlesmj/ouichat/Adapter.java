@@ -1,5 +1,7 @@
+// Version: 1.0
 package fr.charlesmj.ouichat;
 
+// Bibliothèques Android
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.view.LayoutInflater;
@@ -9,23 +11,40 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+// Bibliothèques Firestore
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+// Bibliothèques Java
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * Cette classe représente un adapter personnalisé pour RecyclerView.
+ * Elle est responsable de la création et de la liaison des ViewHolders,
+ * ainsi que de la gestion des données à afficher dans la liste.
+ *
+ * @author cAptive
+ * @version 1.0
+ * @see MainActivity
+ * @see SearchActivity
+ * @see ProfileActivityLogon
+ * @see RecyclerView.Adapter
+ * @see RecyclerView.ViewHolder
+ */
 public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
     private ArrayList<Post> posts;
     private FirebaseFirestore db;
     private String currentUserId;
     private SharedPreferences prefs;
 
+    // Constructeur de l'Adapter
     public Adapter(ArrayList<Post> posts, Context context) {
         this.posts = posts;
         this.prefs = context.getSharedPreferences("UserSession", Context.MODE_PRIVATE);
@@ -35,13 +54,16 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
 
     @NonNull
     @Override
+    // Crée et initialise le ViewHolder et sa vue associée à partir du layout XML
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.posts_list, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
+    // Affiche les données à la position spécifiée
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        // Déclaration de l'objet Post
         Post item = posts.get(position);
 
         // Partie gestion de date du post
@@ -65,9 +87,21 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
         // Partie gestion des likes
         holder.likeCount.setText(String.valueOf(item.getLikes()));
 
-        // Vérification de l'état du like dans SharedPreferences
-        boolean isLiked = prefs.getBoolean("liked_" + item.getPostId(), false);
-        holder.likeIcon.setSelected(isLiked);
+        // Vérification de l'état du like dans la base de données
+        if (currentUserId != null) {
+            DocumentReference currentUserRef = db.collection("users").document(currentUserId);
+
+            // Vérification dans Firestore si l'utilisateur a déjà liké
+            db.collection("posts").document(item.getPostId())
+                    .get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            List<DocumentReference> likedBy = (List<DocumentReference>) documentSnapshot.get("likedBy");
+                            boolean isLiked = likedBy != null && likedBy.contains(currentUserRef);
+                            holder.likeIcon.setSelected(isLiked);
+                        }
+                    });
+        }
 
         // Désactiver le bouton si l'utilisateur n'est pas connecté
         holder.likeIcon.setEnabled(currentUserId != null);
@@ -140,6 +174,7 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
         }
     }
 
+    // Méthode pour compter le nombre de posts, obligatoire pour l'Adapter
     @Override
     public int getItemCount() {
         return posts.size();

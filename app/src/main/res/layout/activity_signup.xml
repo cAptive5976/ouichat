@@ -11,15 +11,13 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
+        android:background="@drawable/toolbar_gradient"
         android:elevation="4dp"
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
         app:layout_constraintTop_toTopOf="parent"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
         app:contentInsetStart="10dp"
-        app:contentInsetLeft="0dp"
-        app:contentInsetEnd="10dp"
-        app:contentInsetRight="0dp">
+        app:contentInsetEnd="10dp">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -31,34 +29,40 @@
                 android:layout_height="wrap_content"
                 android:text="OuiChat"
                 android:textColor="@android:color/white"
-                android:textSize="16sp"
+                android:textSize="18sp"
+                android:fontFamily="@font/nunito_bold"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent" />
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:paddingStart="8dp" />
 
             <ImageView
                 android:id="@+id/toolbar_logo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
                 android:src="@mipmap/ic_launcher_foreground"
+                android:scaleType="fitCenter"
+                android:elevation="4dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent" />
+
 
             <TextView
                 android:id="@+id/toolbar_title_right"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Creation de compte"
+                android:text="Création de compte"
                 android:textColor="@android:color/white"
-                android:textSize="16sp"
+                android:textSize="15sp"
+                android:fontFamily="@font/nunito_bold"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent" />
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:paddingEnd="8dp" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
-
     </androidx.appcompat.widget.Toolbar>
 
     <LinearLayout

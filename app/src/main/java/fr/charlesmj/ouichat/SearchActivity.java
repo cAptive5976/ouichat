@@ -1,52 +1,70 @@
+// Version: 1.0
 package fr.charlesmj.ouichat;
 
-import android.app.Activity;
+// Bibliothèques Android
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.SearchView;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+
+// Bibliothèques Firestore
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+// Bibliothèques Java
 import java.util.ArrayList;
-import java.util.List;
 
+/**
+ * Cette classe représente l'activité de recherche dans l'application OuiChat.
+ * Elle permet aux utilisateurs de rechercher des posts en temps réel en utilisant
+ * un SearchView et affiche les résultats filtrés dans un RecyclerView.
+ * @author cAptive
+ * @version 1.0
+ * @see Post
+ * @see Adapter
+ * @see MainActivity
+ * @see ProfileActivityLogon
+ * @see RecyclerView
+ */
 public class SearchActivity extends AppCompatActivity {
-
-    SearchView searchView;
+    // Déclaration des variables
+    private SearchView searchView;
     private RecyclerView search_results;
     private Adapter postAdapter;
     private ArrayList<Post> postList;
     private ArrayList<Post> filteredPostList;
 
+    // Initialisation de Firestore
     FirebaseFirestore db = FirebaseFirestore.getInstance();
     CollectionReference postsRef = db.collection("posts");
 
 
     @Override
+    // Méthode onCreate qui est appelée au lancement de l'activité
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
 
+        // Initialisation des éléments de l'interface depuis le layout xml
         searchView = findViewById(R.id.searchView);
+        search_results = findViewById(R.id.recyclerViewPosts);
 
+        // Initialisation des listes et de l'adapter pour le RecyclerView
         postList = new ArrayList<>();
         filteredPostList = new ArrayList<>();
         postAdapter = new Adapter(postList,this);
 
-        search_results = findViewById(R.id.recyclerViewPosts);
+        // Configuration du RecyclerView et de l'Adapter
         search_results.setLayoutManager(new LinearLayoutManager(this));
         search_results.setAdapter(postAdapter);
 
+        // Ajout d'un listener sur le SearchView pour filtrer les posts
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -60,6 +78,7 @@ public class SearchActivity extends AppCompatActivity {
             }
         });
 
+        // Barrre de navigation inférieure
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
@@ -88,6 +107,7 @@ public class SearchActivity extends AppCompatActivity {
         bottomNavigationView.setSelectedItemId(R.id.navigation_search);
     }
 
+    // Méthode de filtrage des posts
     private void filterPosts(String search) {
         postsRef.get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
